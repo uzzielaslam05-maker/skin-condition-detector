@@ -12,6 +12,8 @@ def load_model():
 
 model = load_model()
 
+st.write(f"Model classes: {model.names}")
+
 uploaded_file = st.file_uploader("Choose a skin image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -19,14 +21,12 @@ if uploaded_file is not None:
     st.image(image, caption="Uploaded Image", use_container_width=True)
 
     with st.spinner("Running detection..."):
-        results = model.predict(image)
-        annotated = results[0].plot()  # numpy array (BGR->RGB handled below)
+        results = model.predict(image, conf=0.05)  # lowered threshold for debugging
+        annotated = results[0].plot()
 
-    # ultralytics plot() returns BGR; convert for correct display colors
     annotated_rgb = annotated[:, :, ::-1]
-    st.image(annotated_rgb, caption="Detections", use_container_width=True)
+    st.image(annotated_rgb, caption="Detections (conf >= 0.05)", use_container_width=True)
 
-    # show detected classes and confidences
     boxes = results[0].boxes
     if boxes is not None and len(boxes) > 0:
         st.subheader("Detections")
@@ -36,4 +36,4 @@ if uploaded_file is not None:
             label = model.names[cls_id]
             st.write(f"- **{label}**: {conf:.2%} confidence")
     else:
-        st.write("No objects detected.")
+        st.write("No objects detected, even at conf=0.05.")
