@@ -12,6 +12,12 @@ def load_model():
 
 model = load_model()
 
+# This model produces low confidence scores overall, so default threshold is
+# set much lower than the usual 25% — adjust with the slider as needed.
+conf_threshold = st.slider(
+    "Confidence threshold", min_value=0.01, max_value=0.50, value=0.10, step=0.01
+)
+
 uploaded_file = st.file_uploader("Choose a skin image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -19,14 +25,12 @@ if uploaded_file is not None:
     st.image(image, caption="Uploaded Image", use_container_width=True)
 
     with st.spinner("Running detection..."):
-        results = model.predict(image)
-        annotated = results[0].plot()  # numpy array (BGR->RGB handled below)
+        results = model.predict(image, conf=conf_threshold)
+        annotated = results[0].plot()
 
-    # ultralytics plot() returns BGR; convert for correct display colors
     annotated_rgb = annotated[:, :, ::-1]
     st.image(annotated_rgb, caption="Detections", use_container_width=True)
 
-    # show detected classes and confidences
     boxes = results[0].boxes
     if boxes is not None and len(boxes) > 0:
         st.subheader("Detections")
@@ -36,4 +40,4 @@ if uploaded_file is not None:
             label = model.names[cls_id]
             st.write(f"- **{label}**: {conf:.2%} confidence")
     else:
-        st.write("No objects detected.")
+        st.write("No objects detected at this threshold. Try lowering the slider.")
