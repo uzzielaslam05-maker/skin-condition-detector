@@ -128,8 +128,17 @@ if uploaded_file is not None:
 
     st.image(annotated, caption="Detected Lesions", use_container_width=True)
 
-    st.markdown('<div class="sk-result-card">', unsafe_allow_html=True)
-    st.markdown(f'<div class="sk-count-label">{count} spot{"s" if count != 1 else ""} detected</div>', unsafe_allow_html=True)
     if count == 0:
-        st.write("No acne spots detected at this confidence level.")
-    st.markdown('</div>', unsafe_allow_html=True)
+        card_html = f'''
+        <div class="sk-result-card">
+            <div class="sk-count-label">{count} spots detected</div>
+            <div>No acne spots detected at this confidence level.</div>
+        </div>
+        '''
+    else:
+        card_html = f'''
+        <div class="sk-result-card">
+            <div class="sk-count-label">{count} spot{"s" if count != 1 else ""} detected</div>
+        </div>
+        '''
+    st.markdown(card_html, unsafe_allow_html=True)
